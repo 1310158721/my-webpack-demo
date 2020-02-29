@@ -8,6 +8,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
+const addAssetsHtmlWebpackPlugin = require('add-asset-html-webpack-plugin');
 
 /* 解析文件路径函数 */
 const resolve = dir => path.resolve(__dirname, dir);
@@ -19,6 +20,8 @@ module.exports = {
     path: resolve('../dist')
   },
   resolve: {
+    /* 默认可以不写的后缀，不建议写的太多，浪费性能 */
+    extensions: ['.vue', '.js'],
     /* 配置别名 */
     alias: {
       '@': resolve('../src'),
@@ -51,7 +54,15 @@ module.exports = {
     }),
     /* 引入插件，并赋值到全局变量中，如下面的 $ 变量 */
     new webpack.ProvidePlugin({
-      $: 'jquery'
+      // $: 'jquery'
+    }),
+    new addAssetsHtmlWebpackPlugin({
+      filepath: resolve('../dll/vendors.dll.js'),
+      publicPath: 'static/js',
+      outputPath: 'static/js'
+    }),
+    new webpack.DllReferencePlugin({
+      manifest: resolve('../dll/vendors.manifest.json')
     })
   ],
   optimization: {
@@ -63,7 +74,7 @@ module.exports = {
         vendors: {
           test: /[\\/]node_modules[\\/]/,
           priority: -10,
-          filename: 'static/js/venders~[hash].js'
+          filename: 'static/js/vendors~[hash].js'
         },
         default: {
           priority: -20,
